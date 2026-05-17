@@ -3,7 +3,13 @@
   "name": "Grocery Shopping Agent",
   "version": "0.1.0",
   "description": "Local-first meal planning and grocery shopping assistant.",
-  "permissions": ["storage", "sidePanel", "tabs", "activeTab", "scripting"],
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "permissions": ["storage", "sidePanel", "tabs"],
   "host_permissions": [
     "https://www.tesco.com/*",
     "https://*.tesco.com/*",
@@ -33,7 +39,13 @@
     "default_path": "src/sidepanel/index.html"
   },
   "action": {
-    "default_title": "Grocery Shopping Agent"
+    "default_title": "Grocery Shopping Agent",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
   },
   "content_scripts": [
     {

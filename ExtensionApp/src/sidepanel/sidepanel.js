@@ -28,6 +28,7 @@ document.getElementById("shopping-list-select").addEventListener("change", selec
 document.getElementById("shopping-run-list-select").addEventListener("change", selectShoppingList);
 document.getElementById("create-shopping-list").addEventListener("click", createShoppingList);
 document.getElementById("rename-shopping-list").addEventListener("click", renameShoppingList);
+document.getElementById("delete-shopping-list").addEventListener("click", deleteShoppingList);
 document.getElementById("start-shopping").addEventListener("click", startShopping);
 document.getElementById("open-current-retailer").addEventListener("click", openCurrentRetailer);
 document.getElementById("next-shopping-item").addEventListener("click", nextShoppingItem);
@@ -322,6 +323,7 @@ async function renderShopping() {
     runSelect.value = currentShoppingList.id;
   }
   document.getElementById("shopping-list-name").value = currentShoppingList?.name || "";
+  document.getElementById("delete-shopping-list").hidden = !currentShoppingList;
 
   document.querySelector(".run-controls").hidden = !runIsActiveForSelectedList && !currentShoppingList;
   document.getElementById("open-current-retailer").hidden = !runIsActiveForSelectedList;
@@ -426,6 +428,29 @@ async function renameShoppingList() {
   currentShoppingList.name = name;
   await renderShopping();
   document.getElementById("list-status").textContent = `Renamed to ${name}.`;
+}
+
+async function deleteShoppingList() {
+  if (!currentShoppingList) return;
+  const listToDelete = currentShoppingList;
+  const confirmed = confirm(`Delete "${listToDelete.name}"? This cannot be undone.`);
+  if (!confirmed) return;
+
+  const run = await getOne("settings", "shoppingRun");
+  await remove("shoppingLists", listToDelete.id);
+  if (run?.listId === listToDelete.id) {
+    await put("settings", {
+      ...run,
+      running: false,
+      phase: "stopped",
+      updatedAt: new Date().toISOString()
+    });
+  }
+
+  currentShoppingList = null;
+  currentShoppingIndex = 0;
+  await renderShopping();
+  document.getElementById("list-status").textContent = `Deleted ${listToDelete.name}.`;
 }
 
 async function addManualShoppingItem() {
