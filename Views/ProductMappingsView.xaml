@@ -1,0 +1,41 @@
+<UserControl x:Class="ShoppingAgent.Views.ProductMappingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="Product Mappings" FontSize="28" FontWeight="SemiBold" />
+            <WrapPanel Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="Ingredient" Foreground="{StaticResource MutedTextBrush}" />
+                    <ComboBox Width="220" ItemsSource="{Binding Ingredients}" SelectedItem="{Binding SelectedIngredient}" DisplayMemberPath="Name" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Preferred product" Foreground="{StaticResource MutedTextBrush}" />
+                    <TextBox Width="260" Text="{Binding ProductName, UpdateSourceTrigger=PropertyChanged}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Search term" Foreground="{StaticResource MutedTextBrush}" />
+                    <TextBox Width="220" Text="{Binding SearchTerm}" />
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="Product URL" Foreground="{StaticResource MutedTextBrush}" />
+                    <TextBox Width="260" Text="{Binding ProductUrl}" />
+                </StackPanel>
+                <Button Content="Add mapping" Command="{Binding AddMappingCommand}" />
+                <Button Content="Search Tesco" Command="{Binding SearchCommand}" />
+                <Button Content="Find Preferred Product" Command="{Binding StartAssistedMappingCommand}" />
+                <Button Content="Confirm Current Product" Command="{Binding ConfirmCurrentProductCommand}" />
+            </WrapPanel>
+            <TextBlock Text="{Binding Status}" Foreground="{StaticResource MutedTextBrush}" />
+        </StackPanel>
+        <DataGrid ItemsSource="{Binding Mappings}" SelectedItem="{Binding SelectedMapping}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Ingredient" Binding="{Binding Ingredient.Name}" Width="*" />
+                <DataGridTextColumn Header="Store" Binding="{Binding SupermarketName}" Width="*" />
+                <DataGridTextColumn Header="Product" Binding="{Binding ProductName}" Width="2*" />
+                <DataGridTextColumn Header="Search" Binding="{Binding SearchTerm}" Width="2*" />
+                <DataGridTextColumn Header="URL" Binding="{Binding ProductUrl}" Width="3*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

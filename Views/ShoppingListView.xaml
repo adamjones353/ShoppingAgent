@@ -1,0 +1,28 @@
+<UserControl x:Class="ShoppingAgent.Views.ShoppingListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="Shopping List" FontSize="28" FontWeight="SemiBold" />
+            <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                <ComboBox Width="340" ItemsSource="{Binding Lists}" SelectedItem="{Binding SelectedList}" DisplayMemberPath="Name" />
+                <Button Content="Generate from current week" Command="{Binding GenerateForCurrentWeekCommand}" />
+                <Button Content="Save item states" Command="{Binding SaveItemStatesCommand}" />
+                <Button Content="Remove selected" Command="{Binding RemoveSelectedItemCommand}" />
+                <Button Content="Refresh" Command="{Binding LoadCommand}" />
+            </StackPanel>
+            <TextBlock Text="{Binding Status}" Foreground="{StaticResource MutedTextBrush}" />
+        </StackPanel>
+        <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn Header="Done" Binding="{Binding CheckedOff}" Width="*" />
+                <DataGridCheckBoxColumn Header="Owned" Binding="{Binding AlreadyOwned}" Width="*" />
+                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="*" />
+                <DataGridTextColumn Header="Item" Binding="{Binding Name}" Width="2*" />
+                <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="*" />
+                <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="*" />
+                <DataGridTextColumn Header="Notes" Binding="{Binding Notes}" Width="2*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

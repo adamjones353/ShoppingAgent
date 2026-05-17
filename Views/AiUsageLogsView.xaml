@@ -1,0 +1,18 @@
+<UserControl x:Class="ShoppingAgent.Views.AiUsageLogsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="AI Usage Logs" FontSize="28" FontWeight="SemiBold" />
+        <DataGrid ItemsSource="{Binding Logs}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="When" Binding="{Binding CreatedAt}" Width="2*" />
+                <DataGridTextColumn Header="Purpose" Binding="{Binding Purpose}" Width="*" />
+                <DataGridTextColumn Header="Model" Binding="{Binding Model}" Width="*" />
+                <DataGridTextColumn Header="Input tokens" Binding="{Binding EstimatedInputTokens}" Width="*" />
+                <DataGridTextColumn Header="Output tokens" Binding="{Binding EstimatedOutputTokens}" Width="*" />
+                <DataGridCheckBoxColumn Header="Succeeded" Binding="{Binding Succeeded}" Width="*" />
+                <DataGridTextColumn Header="Error" Binding="{Binding Error}" Width="3*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>
