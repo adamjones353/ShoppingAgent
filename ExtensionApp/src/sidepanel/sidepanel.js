@@ -4,6 +4,7 @@ import { combineIngredients, createShoppingListFromMealIds } from "../shared/sho
 import { suggestMealsWithAi } from "../shared/ai.js";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const RETAILERS = window.ShoppingAgentRetailers;
 
 let currentShoppingList = null;
 let currentShoppingIndex = 0;
@@ -28,9 +29,10 @@ document.getElementById("shopping-run-list-select").addEventListener("change", s
 document.getElementById("create-shopping-list").addEventListener("click", createShoppingList);
 document.getElementById("rename-shopping-list").addEventListener("click", renameShoppingList);
 document.getElementById("start-shopping").addEventListener("click", startShopping);
-document.getElementById("open-current-tesco").addEventListener("click", openCurrentTesco);
+document.getElementById("open-current-retailer").addEventListener("click", openCurrentRetailer);
 document.getElementById("next-shopping-item").addEventListener("click", nextShoppingItem);
 document.getElementById("stop-shopping").addEventListener("click", stopShopping);
+document.getElementById("shopping-retailer-select").addEventListener("change", saveSelectedRetailer);
 document.getElementById("add-meal-to-shopping").addEventListener("click", addMealToShoppingList);
 document.getElementById("add-shopping-item").addEventListener("click", addManualShoppingItem);
 document.getElementById("refresh-mappings").addEventListener("click", renderMappings);
@@ -300,6 +302,7 @@ async function makeShoppingList() {
 async function renderShopping() {
   const lists = await getAll("shoppingLists");
   const run = await getOne("settings", "shoppingRun");
+  await renderRetailerSelect(run);
   const listSelect = document.getElementById("shopping-list-select");
   const runSelect = document.getElementById("shopping-run-list-select");
   const previousId = currentShoppingList?.id || Number(listSelect.value) || Number(runSelect.value);
@@ -321,7 +324,7 @@ async function renderShopping() {
   document.getElementById("shopping-list-name").value = currentShoppingList?.name || "";
 
   document.querySelector(".run-controls").hidden = !runIsActiveForSelectedList && !currentShoppingList;
-  document.getElementById("open-current-tesco").hidden = !runIsActiveForSelectedList;
+  document.getElementById("open-current-retailer").hidden = !runIsActiveForSelectedList;
   document.getElementById("next-shopping-item").hidden = !runIsActiveForSelectedList;
   document.getElementById("stop-shopping").hidden = !runIsActiveForSelectedList;
   document.getElementById("start-shopping").hidden = !currentShoppingList || runIsActiveForSelectedList;
@@ -330,6 +333,36 @@ async function renderShopping() {
     ? `Shopping run active: item ${run.currentIndex + 1} - ${run.phase || "running"}`
     : currentShoppingList ? "Select a list and click Shop when ready." : "Create a list on the Lists page first.";
   renderShoppingItems();
+}
+
+async function renderRetailerSelect(run) {
+  const select = document.getElementById("shopping-retailer-select");
+  const selectedRetailerId = run?.retailerId || await getPreferredRetailerId();
+  select.innerHTML = "";
+  for (const retailer of RETAILERS.RETAILERS) {
+    const option = document.createElement("option");
+    option.value = retailer.id;
+    option.textContent = retailer.name;
+    select.appendChild(option);
+  }
+  select.value = RETAILERS.retailerById(selectedRetailerId).id;
+}
+
+async function saveSelectedRetailer() {
+  const retailerId = document.getElementById("shopping-retailer-select").value;
+  const settings = await getOne("settings", "app") || { id: "app" };
+  await put("settings", {
+    ...settings,
+    shoppingRetailerId: retailerId
+  });
+  const run = await getOne("settings", "shoppingRun");
+  if (run?.running) {
+    await put("settings", {
+      ...run,
+      retailerId,
+      updatedAt: new Date().toISOString()
+    });
+  }
 }
 
 function createOption(list) {
@@ -512,11 +545,13 @@ async function removeShoppingItem(index) {
 
 async function startShopping() {
   if (!currentShoppingList?.items?.length) return;
+  const retailerId = await getPreferredRetailerId();
 
   const run = {
     id: "shoppingRun",
     listId: currentShoppingList.id,
     currentIndex: 0,
+    retailerId,
     running: true,
     phase: "starting",
     autoAddAttempted: false,
@@ -528,7 +563,7 @@ async function startShopping() {
   await renderShopping();
 }
 
-async function openCurrentTesco() {
+async function openCurrentRetailer() {
   const item = getCurrentShoppingItem();
   if (!item) return;
   await openShoppingTarget(item);
@@ -542,6 +577,7 @@ async function nextShoppingItem() {
     id: "shoppingRun",
     listId: currentShoppingList.id,
     currentIndex: nextIndex,
+    retailerId: await getPreferredRetailerId(),
     running: nextIndex < currentShoppingList.items.length,
     phase: nextIndex < currentShoppingList.items.length ? "movingNext" : "complete",
     autoAddAttempted: false,
@@ -568,13 +604,15 @@ async function stopShopping() {
 
 async function openShoppingTarget(item, existingRun = null) {
   const mapping = await findMappingForItem(item);
-  const url = mapping?.productUrl || `https://www.tesco.com/groceries/en-GB/search?query=${encodeURIComponent(mapping?.searchTerm || item.name)}`;
   const run = existingRun || await getOne("settings", "shoppingRun");
+  const retailerId = run?.retailerId || await getPreferredRetailerId();
+  const url = RETAILERS.searchUrlForItem(item, mapping, retailerId);
   if (run?.id === "shoppingRun") {
     await put("settings", {
       ...run,
+      retailerId,
       targetUrl: url,
-      phase: mapping?.productUrl ? "preferredProductOpened" : "awaitingManualSelection",
+      phase: mapping?.productUrl && RETAILERS.isProductUrl(mapping.productUrl) ? "preferredProductOpened" : "awaitingManualSelection",
       autoAddAttempted: false,
       updatedAt: new Date().toISOString()
     });
@@ -584,7 +622,23 @@ async function openShoppingTarget(item, existingRun = null) {
 
 async function findMappingForItem(item) {
   const mappings = await getAll("productMappings");
-  return mappings.find(mapping => mapping.ingredientName?.toLowerCase() === item.name.toLowerCase());
+  const retailerId = await getPreferredRetailerId();
+  const retailerMatch = mappings.find(mapping =>
+    mapping.ingredientName?.toLowerCase() === item.name.toLowerCase()
+    && mapping.retailerId === retailerId
+  );
+  if (retailerMatch) return retailerMatch;
+  if (retailerId === "tesco") {
+    return mappings.find(mapping => mapping.ingredientName?.toLowerCase() === item.name.toLowerCase() && !mapping.retailerId);
+  }
+  return null;
+}
+
+async function getPreferredRetailerId() {
+  const selected = document.getElementById("shopping-retailer-select")?.value;
+  if (selected) return selected;
+  const settings = await getOne("settings", "app");
+  return RETAILERS.retailerById(settings?.shoppingRetailerId).id;
 }
 
 async function openUrlInCurrentTab(url) {
@@ -608,6 +662,7 @@ async function renderMappings() {
         <div>
           <div class="card-title">${escapeHtml(mapping.ingredientName || mapping.productName)}</div>
           <div>${escapeHtml(mapping.productName || "")}</div>
+          <div class="muted">${escapeHtml(mapping.supermarketName || RETAILERS.retailerById(mapping.retailerId).name)}</div>
           <div class="muted">${escapeHtml(mapping.productUrl || "")}</div>
         </div>
         <button class="danger" data-id="${mapping.id}">Remove</button>
@@ -630,7 +685,9 @@ async function renderSettings() {
 }
 
 async function saveSettings() {
+  const existing = await getOne("settings", "app") || { id: "app" };
   await put("settings", {
+    ...existing,
     id: "app",
     openAiApiKey: document.getElementById("openai-key").value,
     openAiModel: document.getElementById("openai-model").value || "gpt-4.1-mini",

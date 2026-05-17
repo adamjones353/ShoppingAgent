@@ -1,6 +1,7 @@
 init(window.ShoppingAgentDb);
 
 function init(db) {
+  if (!currentRetailer()) return;
   const root = ensureOverlay();
   root.querySelector("#sa-toggle").addEventListener("click", toggleOverlay);
   root.querySelector("#sa-use-product").addEventListener("click", () => runSafely(() => useCurrentProduct(db)));
@@ -15,10 +16,10 @@ function init(db) {
 }
 
 function ensureOverlay() {
-  let root = document.getElementById("shopping-agent-tesco");
+  let root = document.getElementById("shopping-agent-grocery");
   if (root) return root;
   root = document.createElement("div");
-  root.id = "shopping-agent-tesco";
+  root.id = "shopping-agent-grocery";
   root.innerHTML = `
     <div class="sa-header">
       <strong>Grocery Shopping Agent</strong>
@@ -46,7 +47,7 @@ function ensureOverlay() {
 }
 
 function toggleOverlay() {
-  const root = document.getElementById("shopping-agent-tesco");
+  const root = document.getElementById("shopping-agent-grocery");
   const minimized = !root.classList.contains("minimized");
   root.classList.toggle("minimized", minimized);
   root.querySelector("#sa-toggle").textContent = minimized ? "Show" : "Minimize";
@@ -59,9 +60,10 @@ async function updateOverlay(db) {
   const state = document.getElementById("sa-state");
   if (!page || !runText || !state) return;
 
-  page.textContent = location.href.includes("/products/")
+  const retailer = currentRetailer();
+  page.textContent = isProductPage()
     ? `Product: ${productNameFromPage()}`
-    : "Open a Tesco product page to use or save it.";
+    : `Open a ${retailer?.name || "grocery"} product page to use or save it.`;
 
   const runState = await getRunState(db);
   updateRunControls(runState);
@@ -74,9 +76,7 @@ async function updateOverlay(db) {
 }
 
 function productNameFromPage() {
-  const h1 = document.querySelector("h1");
-  if (h1?.innerText?.trim()) return h1.innerText.trim();
-  return document.title.replace("| Tesco", "").replace("- Tesco Groceries", "").trim();
+  return window.ShoppingAgentRetailers.productNameFromDocument(document, currentRetailer());
 }
 
 function findAddButton() {
@@ -88,8 +88,8 @@ function findAddButton() {
 
 function addCurrentProduct() {
   const status = document.getElementById("sa-status");
-  if (!location.href.includes("/products/")) {
-    status.textContent = "Open a Tesco product page first.";
+  if (!isProductPage()) {
+    status.textContent = `Open a ${currentRetailer()?.name || "grocery"} product page first.`;
     return false;
   }
   const button = findAddButton();
@@ -98,13 +98,13 @@ function addCurrentProduct() {
     return false;
   }
   button.click();
-  status.textContent = "Clicked Add. Check Tesco basket before checkout.";
+  status.textContent = `Clicked Add. Check your ${currentRetailer()?.name || "retailer"} basket before checkout.`;
   return true;
 }
 
 async function autoAddPreferredProduct(db) {
   const context = await getRunContext(db);
-  if (!context?.item || !location.href.includes("/products/")) return;
+  if (!context?.item || !isProductPage()) return;
   if (context.run.phase !== "preferredProductOpened" || context.run.autoAddAttempted) return;
 
   const mapping = await findMapping(db, context.item);
@@ -127,8 +127,8 @@ async function autoAddPreferredProduct(db) {
 async function useCurrentProduct(db) {
   const status = document.getElementById("sa-status");
   const context = await getRunContext(db);
-  if (!location.href.includes("/products/")) {
-    status.textContent = "Open the chosen Tesco product page first.";
+  if (!isProductPage()) {
+    status.textContent = `Open the chosen ${currentRetailer()?.name || "grocery"} product page first.`;
     return;
   }
   if (!context?.item) {
@@ -148,8 +148,8 @@ async function useCurrentProduct(db) {
 
 async function saveMapping(db) {
   const status = document.getElementById("sa-status");
-  if (!location.href.includes("/products/")) {
-    status.textContent = "Open a Tesco product page first.";
+  if (!isProductPage()) {
+    status.textContent = `Open a ${currentRetailer()?.name || "grocery"} product page first.`;
     return;
   }
   const context = await getRunContext(db);
@@ -161,11 +161,16 @@ async function saveMapping(db) {
 
 async function saveMappingForIngredient(db, ingredientName) {
   const mappings = await db.getAll("productMappings");
-  const existing = mappings.find(mapping => mapping.ingredientName?.toLowerCase() === ingredientName.toLowerCase());
+  const retailerId = currentRetailer()?.id || "unknown";
+  const existing = mappings.find(mapping =>
+    mapping.ingredientName?.toLowerCase() === ingredientName.toLowerCase()
+    && (mapping.retailerId || mapping.supermarketName?.toLowerCase()) === retailerId
+  );
   await db.put("productMappings", {
     id: existing?.id,
     ingredientName,
-    supermarketName: "Tesco",
+    supermarketName: currentRetailer()?.name || "Unknown",
+    retailerId,
     productName: productNameFromPage(),
     searchTerm: ingredientName,
     productUrl: location.href,
@@ -189,7 +194,7 @@ async function advanceShoppingRun(db, openNext, expectedIndex = null) {
   const nextIndex = context.run.currentIndex + 1;
   const running = nextIndex < context.list.items.length;
   const nextUrl = running ? await targetUrlForItem(db, context.list.items[nextIndex]) : "";
-  const hasPreferred = running && nextUrl.includes("/products/");
+  const hasPreferred = running && window.ShoppingAgentRetailers.isProductUrl(nextUrl);
   await db.put("settings", {
     ...context.run,
     currentIndex: nextIndex,
@@ -267,21 +272,34 @@ async function getRunContext(db) {
 
 async function targetUrlForItem(db, item) {
   const mapping = await findMapping(db, item);
-  return mapping?.productUrl || `https://www.tesco.com/groceries/en-GB/search?query=${encodeURIComponent(mapping?.searchTerm || item.name)}`;
+  const run = await db.getOne("settings", "shoppingRun");
+  return window.ShoppingAgentRetailers.searchUrlForItem(item, mapping, run?.retailerId);
 }
 
 async function findMapping(db, item) {
   const mappings = await db.getAll("productMappings");
-  return mappings.find(mapping => mapping.ingredientName?.toLowerCase() === item.name.toLowerCase());
+  const run = await db.getOne("settings", "shoppingRun");
+  const retailerMatch = mappings.find(mapping =>
+    mapping.ingredientName?.toLowerCase() === item.name.toLowerCase()
+    && mapping.retailerId === run?.retailerId
+  );
+  if (retailerMatch) return retailerMatch;
+  if (run?.retailerId === "tesco") {
+    return mappings.find(mapping => mapping.ingredientName?.toLowerCase() === item.name.toLowerCase() && !mapping.retailerId);
+  }
+  return null;
 }
 
 function normalizeUrl(url) {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.origin}${parsed.pathname}`;
-  } catch {
-    return url;
-  }
+  return window.ShoppingAgentRetailers.urlOriginAndPath(url);
+}
+
+function currentRetailer() {
+  return window.ShoppingAgentRetailers.retailerForUrl(location.href);
+}
+
+function isProductPage() {
+  return window.ShoppingAgentRetailers.isProductUrl(location.href, currentRetailer());
 }
 
 async function runSafely(action) {

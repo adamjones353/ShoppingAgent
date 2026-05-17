@@ -6,6 +6,23 @@
   "permissions": ["storage", "sidePanel", "tabs", "activeTab", "scripting"],
   "host_permissions": [
     "https://www.tesco.com/*",
+    "https://*.tesco.com/*",
+    "https://www.sainsburys.co.uk/*",
+    "https://*.sainsburys.co.uk/*",
+    "https://www.asda.com/*",
+    "https://*.asda.com/*",
+    "https://www.morrisons.com/*",
+    "https://*.morrisons.com/*",
+    "https://www.waitrose.com/*",
+    "https://*.waitrose.com/*",
+    "https://www.ocado.com/*",
+    "https://*.ocado.com/*",
+    "https://www.iceland.co.uk/*",
+    "https://*.iceland.co.uk/*",
+    "https://www.coop.co.uk/*",
+    "https://*.coop.co.uk/*",
+    "https://www.amazon.co.uk/*",
+    "https://*.amazon.co.uk/*",
     "https://api.openai.com/*"
   ],
   "background": {
@@ -20,8 +37,18 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.tesco.com/*"],
-      "js": ["src/content/content-db.js", "src/content/tesco-content.js"],
+      "matches": [
+        "https://*.tesco.com/*",
+        "https://*.sainsburys.co.uk/*",
+        "https://*.asda.com/*",
+        "https://*.morrisons.com/*",
+        "https://*.waitrose.com/*",
+        "https://*.ocado.com/*",
+        "https://*.iceland.co.uk/*",
+        "https://*.coop.co.uk/*",
+        "https://*.amazon.co.uk/*"
+      ],
+      "js": ["src/content/content-db.js", "src/shared/retailers.js", "src/content/tesco-content.js"],
       "css": ["src/content/tesco-overlay.css"],
       "run_at": "document_idle"
     }

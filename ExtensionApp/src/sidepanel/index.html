@@ -9,7 +9,7 @@
 <body>
   <header>
     <h1>Grocery Shopping Agent</h1>
-    <p>Meal planning and Tesco shopping</p>
+    <p>Meal planning and grocery shopping</p>
   </header>
 
   <nav>
@@ -119,10 +119,11 @@
     <section id="view-shopping" class="view">
       <div class="toolbar">
         <select id="shopping-run-list-select"></select>
+        <select id="shopping-retailer-select"></select>
       </div>
       <div class="toolbar run-controls">
         <button id="start-shopping">Shop</button>
-        <button id="open-current-tesco">Open current</button>
+        <button id="open-current-retailer">Open current</button>
         <button id="next-shopping-item">Next</button>
         <button id="stop-shopping">Stop</button>
       </div>
@@ -151,6 +152,7 @@
     </section>
   </main>
 
+  <script src="../shared/retailers.js"></script>
   <script type="module" src="sidepanel.js"></script>
 </body>
 </html>

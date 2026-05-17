@@ -1,4 +1,4 @@
-#shopping-agent-tesco {
+#shopping-agent-grocery {
   position: fixed;
   right: 16px;
   bottom: 16px;
@@ -13,28 +13,28 @@
   font: 14px Segoe UI, Arial, sans-serif;
 }
 
-#shopping-agent-tesco.minimized {
+#shopping-agent-grocery.minimized {
   width: auto;
   min-width: 190px;
   padding: 8px 10px;
 }
 
-#shopping-agent-tesco .sa-header {
+#shopping-agent-grocery .sa-header {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   align-items: center;
 }
 
-#shopping-agent-tesco .sa-body {
+#shopping-agent-grocery .sa-body {
   margin-top: 6px;
 }
 
-#shopping-agent-tesco.minimized .sa-body {
+#shopping-agent-grocery.minimized .sa-body {
   display: none;
 }
 
-#shopping-agent-tesco .sa-state {
+#shopping-agent-grocery .sa-state {
   display: inline-block;
   margin: 2px 0 6px;
   padding: 4px 7px;
@@ -43,27 +43,27 @@
   font-weight: 700;
 }
 
-#shopping-agent-tesco .sa-state.active {
+#shopping-agent-grocery .sa-state.active {
   background: #14532d;
   color: #bbf7d0;
 }
 
-#shopping-agent-tesco .sa-state.complete {
+#shopping-agent-grocery .sa-state.complete {
   background: #1e3a8a;
   color: #bfdbfe;
 }
 
-#shopping-agent-tesco .sa-state.stopped {
+#shopping-agent-grocery .sa-state.stopped {
   background: #7f1d1d;
   color: #fecaca;
 }
 
-#shopping-agent-tesco .sa-state.idle {
+#shopping-agent-grocery .sa-state.idle {
   background: #334155;
   color: #e2e8f0;
 }
 
-#shopping-agent-tesco button {
+#shopping-agent-grocery button {
   margin: 5px 5px 0 0;
   padding: 7px 9px;
   border: 0;
@@ -74,7 +74,7 @@
   cursor: pointer;
 }
 
-#shopping-agent-tesco #sa-toggle {
+#shopping-agent-grocery #sa-toggle {
   margin: 0;
   padding: 5px 7px;
   background: #334155;
@@ -82,7 +82,7 @@
   font-size: 12px;
 }
 
-#shopping-agent-tesco .muted {
+#shopping-agent-grocery .muted {
   color: #cbd5e1;
   margin-top: 5px;
 }
