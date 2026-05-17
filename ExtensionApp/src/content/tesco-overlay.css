@@ -1,0 +1,88 @@
+#shopping-agent-tesco {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483647;
+  width: 350px;
+  background: #111827;
+  color: #f8fafc;
+  border: 2px solid #5dbb8a;
+  border-radius: 8px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.35);
+  padding: 12px;
+  font: 14px Segoe UI, Arial, sans-serif;
+}
+
+#shopping-agent-tesco.minimized {
+  width: auto;
+  min-width: 190px;
+  padding: 8px 10px;
+}
+
+#shopping-agent-tesco .sa-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+#shopping-agent-tesco .sa-body {
+  margin-top: 6px;
+}
+
+#shopping-agent-tesco.minimized .sa-body {
+  display: none;
+}
+
+#shopping-agent-tesco .sa-state {
+  display: inline-block;
+  margin: 2px 0 6px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#shopping-agent-tesco .sa-state.active {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+#shopping-agent-tesco .sa-state.complete {
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
+#shopping-agent-tesco .sa-state.stopped {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+#shopping-agent-tesco .sa-state.idle {
+  background: #334155;
+  color: #e2e8f0;
+}
+
+#shopping-agent-tesco button {
+  margin: 5px 5px 0 0;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 5px;
+  background: #5dbb8a;
+  color: #06130d;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+#shopping-agent-tesco #sa-toggle {
+  margin: 0;
+  padding: 5px 7px;
+  background: #334155;
+  color: #f8fafc;
+  font-size: 12px;
+}
+
+#shopping-agent-tesco .muted {
+  color: #cbd5e1;
+  margin-top: 5px;
+}

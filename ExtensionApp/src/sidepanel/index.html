@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grocery Shopping Agent</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header>
+    <h1>Grocery Shopping Agent</h1>
+    <p>Meal planning and Tesco shopping</p>
+  </header>
+
+  <nav>
+    <button data-view="meals" class="active">Meals</button>
+    <button data-view="ai">AI Ideas</button>
+    <button data-view="planner">Planner</button>
+    <button data-view="lists">Lists</button>
+    <button data-view="shopping">Shopping</button>
+    <button data-view="mappings">Preferences</button>
+    <button data-view="settings">Settings</button>
+  </nav>
+
+  <main>
+    <section id="view-meals" class="view active">
+      <div class="card form-card">
+        <label>Meal name</label>
+        <input id="meal-name" placeholder="Chicken pasta">
+        <div class="form-grid">
+          <div>
+            <label>Effort</label>
+            <select id="meal-effort">
+              <option>Low</option>
+              <option selected>Medium</option>
+              <option>High</option>
+            </select>
+          </div>
+          <div>
+            <label>Minutes</label>
+            <input id="meal-minutes" type="number" min="1" value="30">
+          </div>
+        </div>
+        <label>Ingredient</label>
+        <div class="ingredient-grid">
+          <input id="ingredient-name" placeholder="Ingredient">
+          <input id="ingredient-quantity" type="number" min="0" step="0.1" placeholder="Qty">
+          <input id="ingredient-unit" placeholder="Unit">
+          <input id="ingredient-category" placeholder="Category">
+        </div>
+        <div class="toolbar two">
+          <button id="add-ingredient">Add ingredient</button>
+          <button id="add-meal">Save meal</button>
+        </div>
+        <div id="new-meal-ingredients" class="mini-list"></div>
+      </div>
+      <div id="meal-list" class="list"></div>
+    </section>
+
+    <section id="view-ai" class="view">
+      <div class="card">
+        <label>Ask for meal ideas</label>
+        <textarea id="ai-prompt" rows="4" placeholder="Suggest 5 low-effort meals using chicken or bacon. Avoid anything spicy."></textarea>
+        <button id="ask-ai-meals">Ask AI</button>
+        <div id="ai-status" class="muted"></div>
+      </div>
+      <div id="ai-suggestion-list" class="list"></div>
+    </section>
+
+    <section id="view-planner" class="view">
+      <div class="toolbar">
+        <button id="auto-plan">Auto plan week</button>
+        <button id="make-shopping-list">Create shopping list</button>
+      </div>
+      <div class="card">
+        <label>Add meal to plan</label>
+        <select id="planner-meal-select"></select>
+        <label>Day</label>
+        <select id="planner-day-select">
+          <option value="0">Monday</option>
+          <option value="1">Tuesday</option>
+          <option value="2">Wednesday</option>
+          <option value="3">Thursday</option>
+          <option value="4">Friday</option>
+          <option value="5">Saturday</option>
+          <option value="6">Sunday</option>
+        </select>
+        <button id="add-plan-meal">Add to plan</button>
+      </div>
+      <div id="plan-list" class="list"></div>
+    </section>
+
+    <section id="view-lists" class="view">
+      <div class="toolbar">
+        <select id="shopping-list-select"></select>
+        <input id="shopping-list-name" placeholder="Shopping list name">
+        <button id="create-shopping-list">New list</button>
+        <button id="rename-shopping-list">Rename</button>
+      </div>
+      <div id="list-status" class="focus muted"></div>
+      <div class="card">
+        <label>Add meal to shopping list</label>
+        <select id="shopping-meal-select"></select>
+        <button id="add-meal-to-shopping">Add meal ingredients</button>
+      </div>
+      <div class="card">
+        <label>Add shopping item</label>
+        <div class="ingredient-grid">
+          <input id="manual-shopping-name" placeholder="Shower gel">
+          <input id="manual-shopping-quantity" type="number" min="0" step="0.1" value="1">
+          <input id="manual-shopping-unit" placeholder="Unit">
+          <input id="manual-shopping-category" placeholder="Category">
+        </div>
+        <button id="add-shopping-item">Add item</button>
+      </div>
+      <div id="shopping-items" class="list"></div>
+    </section>
+
+    <section id="view-shopping" class="view">
+      <div class="toolbar">
+        <select id="shopping-run-list-select"></select>
+      </div>
+      <div class="toolbar run-controls">
+        <button id="start-shopping">Shop</button>
+        <button id="open-current-tesco">Open current</button>
+        <button id="next-shopping-item">Next</button>
+        <button id="stop-shopping">Stop</button>
+      </div>
+      <div id="shopping-status" class="focus muted"></div>
+      <div id="current-shopping-item" class="focus"></div>
+      <div id="shopping-run-items" class="list"></div>
+    </section>
+
+    <section id="view-mappings" class="view">
+      <div class="toolbar">
+        <button id="refresh-mappings">Refresh preferences</button>
+      </div>
+      <div id="mapping-list" class="list"></div>
+    </section>
+
+    <section id="view-settings" class="view">
+      <label>OpenAI API key</label>
+      <input id="openai-key" type="password">
+      <label>Model</label>
+      <input id="openai-model">
+      <label>Max output tokens</label>
+      <input id="openai-max-output" type="number" min="500" value="3500">
+      <label><input id="enable-ai" type="checkbox"> Enable AI</label>
+      <button id="save-settings">Save settings</button>
+      <button id="export-data">Export data</button>
+    </section>
+  </main>
+
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

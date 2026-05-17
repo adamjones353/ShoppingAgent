@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Grocery Shopping Agent",
+  "version": "0.1.0",
+  "description": "Local-first meal planning and grocery shopping assistant.",
+  "permissions": ["storage", "sidePanel", "tabs", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://www.tesco.com/*",
+    "https://api.openai.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background/background.js",
+    "type": "module"
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel/index.html"
+  },
+  "action": {
+    "default_title": "Grocery Shopping Agent"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.tesco.com/*"],
+      "js": ["src/content/content-db.js", "src/content/tesco-content.js"],
+      "css": ["src/content/tesco-overlay.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
